@@ -4,10 +4,12 @@
 
 ## Reference
 
+* Configuration
+    * [Configuration](Config.md)
+
 * Nodes
     * [Node Util](NodeUtil.md)
     * [Node Switcher](NodeSwitcher.md)
-    * [View Grid](ViewGrid.md)
     * [Sprite Util](SpriteUtil.md)
 
 * Collections

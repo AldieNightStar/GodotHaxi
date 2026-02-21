@@ -10,5 +10,5 @@
 double dist = MathUtil.GetDistance2D(x, y, x2, y2);
 
 // Same as above, but converts into int
-int    dist = MathUtil.GetDistance2DInt(x, y, x2, y2);
+int dist = MathUtil.GetDistance2DInt(x, y, x2, y2);
 ```

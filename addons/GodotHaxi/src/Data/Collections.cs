@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace GodotHaxi;
 
@@ -17,6 +18,11 @@ public class CollectionUtil
         }
 
         return dict;
+    }
+
+    public static Dictionary<K, IEnumerable<T>> Group<K, T>(IEnumerable<T> items, Func<T, K> func)
+    {
+        return items.GroupBy(func).ToDictionary(g => g.Key, g => (IEnumerable<T>)g);
     }
 
     public static ISet<K> SetOf<T, K>(IEnumerable<T> items, Func<T, K> func)
