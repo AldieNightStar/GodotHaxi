@@ -10,6 +10,9 @@
     * [View Grid](ViewGrid.md)
     * [Sprite Util](SpriteUtil.md)
 
+* Collections
+    * [Collection Util](Collections.md)
+
 * Math & Logic
     * [Math Util](MathUtil.md)
 
