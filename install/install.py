@@ -5,9 +5,8 @@ import sys
 import os
 
 ADDON_PATH = ("addons", "GodotHaxi")
-ADDON_README_PATH = (*ADDON_PATH, "doc", "README.md")
 IGNORE_PATTERNS = ("*.uid",)
-REMOTE_MAIN_BRANCH = "main"
+GIT_MAIN_BRANCH = "main"
 
 currentDir = os.path.dirname(os.path.realpath(__file__))
 projectDir = os.path.abspath(os.path.join(currentDir, ".."))
@@ -40,7 +39,7 @@ def is_godot_dir(root: str):
     return os.path.exists(gd)
 
 def pull_last():
-    subprocess.call(("git", "pull", "origin", REMOTE_MAIN_BRANCH), cwd=projectDir)
+    subprocess.call(("git", "pull", "origin", GIT_MAIN_BRANCH), cwd=projectDir)
 
 if __name__ == "__main__":
     main(sys.argv[1:])
