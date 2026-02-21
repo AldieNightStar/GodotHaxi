@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Godot;
-using GodotHaxi;
+
+namespace GodotHaxi;
 
 public partial class NodeSwitcher
 {

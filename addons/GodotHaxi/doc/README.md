@@ -10,7 +10,10 @@
     * [View Grid](ViewGrid.md)
     * [Sprite Util](SpriteUtil.md)
 
-* Utils
+* Math & Logic
+    * [Math Util](MathUtil.md)
+
+* Variants
     * [Wrapping Variables](Wrap.md)
 
 * Timers
