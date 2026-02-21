@@ -14,3 +14,10 @@
 
 ## Install
 * Just copy `addons/GodotHaxi` into your project. (Remove old if there was one)
+
+## Installer Script
+* Run `install/install.py` with directory of your project to install into
+* For example:
+```bash
+python3 install/install.py   /home/user/godot/project1
+```
