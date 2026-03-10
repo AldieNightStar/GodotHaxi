@@ -92,14 +92,11 @@ public class NodeController<NODE, DAT> where NODE : Node
         }
 
         // Spawn remaining
-        if (_spawner != null)
+        foreach (var data in dict.Values)
         {
-            foreach (var data in dict.Values)
-            {
-                var node = _spawner(data);
-                if (node.GetParent() == null) _root.AddChild(node);
-                _callWhenReady(node, () => _nodeUpdater(node, data));
-            }
+            var node = _spawner(data);
+            if (node.GetParent() == null) _root.AddChild(node);
+            _callWhenReady(node, () => _nodeUpdater(node, data));
         }
     }
 
