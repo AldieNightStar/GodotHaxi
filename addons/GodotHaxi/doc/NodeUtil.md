@@ -102,5 +102,8 @@ var controller = NodeUtil.Controller<Pawn, PawnData>(_pawns)
 	.WithNodeUpdater((node, dat) => node.UpdatePawn(dat));
 
 // Update controller according to Collection of Data
-controller.Update(dataCollection)
+controller.UpdateAll(dataCollection);
+
+// Update only existing ones (Will not delete / create new ones)
+controller.UpdateExisting(dataCollection);
 ```

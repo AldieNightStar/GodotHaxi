@@ -48,7 +48,23 @@ public class NodeController<NODE, DAT> where NODE : Node
         return this;
     }
 
-    public void Update(IEnumerable<DAT> collection)
+    public void UpdateExisting(IEnumerable<DAT> collection)
+    {
+        if (!_isRequiredSatisfied()) return;   
+        var dict = CollectionUtil.Assoc(collection, dat => _dataIdGetter(dat));
+
+        foreach (var child in _root.GetChildren())
+        {
+            if (child is NODE node)
+            {
+                var id = _nodeIdGetter(node);
+                var data = dict.GetValueOrDefault(id);
+                if (data != null) _nodeUpdater(node, data);
+            }
+        }
+    }
+
+    public void UpdateAll(IEnumerable<DAT> collection)
     {
         if (!_isRequiredSatisfied()) return;        
         var dict = CollectionUtil.Assoc(collection, dat => _dataIdGetter(dat));
