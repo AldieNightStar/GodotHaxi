@@ -50,7 +50,7 @@ public class NodeSync<NODE, DAT> where NODE : Node
 
     public void UpdateExisting(IEnumerable<DAT> collection)
     {
-        if (!_isRequiredSatisfied()) return;   
+        if (!_isRequiredSatisfied()) return;
         var dict = CollectionUtil.Assoc(collection, dat => _dataIdGetter(dat));
 
         foreach (var child in _root.GetChildren())
@@ -64,24 +64,40 @@ public class NodeSync<NODE, DAT> where NODE : Node
         }
     }
 
+    public void DeleteExisting(IEnumerable<uint> ids)
+    {
+        if (!_isRequiredSatisfied()) return;
+
+        // Assoc nodes by their ids
+        var subNodes = NodeUtil.GetOfType<NODE>(_root);
+        var nodeDict = CollectionUtil.Assoc(subNodes, node => _nodeIdGetter(node));
+
+        foreach (uint id in ids)
+        {
+            var node = nodeDict.GetValueOrDefault(id);
+            if (node == null) continue;
+            node.QueueFree();
+        }
+    }
+
     public void UpdateAll(IEnumerable<DAT> collection)
     {
-        if (!_isRequiredSatisfied()) return;        
-        var dict = CollectionUtil.Assoc(collection, dat => _dataIdGetter(dat));
+        if (!_isRequiredSatisfied()) return;
+        var dataDict = CollectionUtil.Assoc(collection, dat => _dataIdGetter(dat));
 
         foreach (var child in _root.GetChildren())
         {
             if (child is NODE node)
             {
                 var id = _nodeIdGetter(node);
-                var data = dict.GetValueOrDefault(id);
+                var data = dataDict.GetValueOrDefault(id);
                 if (data != null)
                 {
                     // Has data
                     _nodeUpdater(node, data);
 
                     // Remove from dict for the remaining to respawn
-                    dict.Remove(id);
+                    dataDict.Remove(id);
                 }
                 else
                 {
@@ -92,7 +108,7 @@ public class NodeSync<NODE, DAT> where NODE : Node
         }
 
         // Spawn remaining
-        foreach (var data in dict.Values)
+        foreach (var data in dataDict.Values)
         {
             var node = _spawner(data);
             if (node.GetParent() == null) _root.AddChild(node);

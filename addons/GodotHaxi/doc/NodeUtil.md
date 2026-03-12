@@ -107,4 +107,7 @@ sync.UpdateAll(dataCollection);
 
 // Update only existing ones (Will not delete / create new ones)
 sync.UpdateExisting(dataCollection);
+
+// Delete existing nodes by the ids in the list
+sync.DeleteExisting([1, 2, 3, 4]);
 ```
