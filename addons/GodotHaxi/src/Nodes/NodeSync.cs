@@ -5,7 +5,7 @@ using Godot;
 
 namespace GodotHaxi;
 
-public class NodeController<NODE, DAT> where NODE : Node
+public class NodeSync<NODE, DAT> where NODE : Node
 {
     private Node _root;
     private Func<DAT, NODE> _spawner;
@@ -13,36 +13,36 @@ public class NodeController<NODE, DAT> where NODE : Node
     private Func<DAT, uint> _dataIdGetter;
     private Action<NODE, DAT> _nodeUpdater;
 
-    public NodeController(Node rootNode)
+    public NodeSync(Node rootNode)
     {
         _root = rootNode;
     }
 
-    public NodeController<NODE, DAT> WithSpawner(Func<DAT, NODE> spawner)
+    public NodeSync<NODE, DAT> WithSpawner(Func<DAT, NODE> spawner)
     {
         _spawner = spawner;
         return this;
     }
 
-    public NodeController<NODE, DAT> WithSpawner(string name)
+    public NodeSync<NODE, DAT> WithSpawner(string name)
     {
         _spawner = (_) => NodeUtil.Spawn<NODE>(_root, name);
         return this;
     }
 
-    public NodeController<NODE, DAT> WithNodeId(Func<NODE, uint> idGetter)
+    public NodeSync<NODE, DAT> WithNodeId(Func<NODE, uint> idGetter)
     {
         _nodeIdGetter = idGetter;
         return this;
     }
 
-    public NodeController<NODE, DAT> WithDataId(Func<DAT, uint> idGetter)
+    public NodeSync<NODE, DAT> WithDataId(Func<DAT, uint> idGetter)
     {
         _dataIdGetter = idGetter;
         return this;
     }
 
-    public NodeController<NODE, DAT> WithNodeUpdater(Action<NODE, DAT> updater)
+    public NodeSync<NODE, DAT> WithNodeUpdater(Action<NODE, DAT> updater)
     {
         _nodeUpdater = updater;
         return this;

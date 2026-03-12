@@ -95,16 +95,16 @@ var control = NodeUtil.WrapInControl(node, width, height);
 * Good for table top games, etc
 ```cs
 // Create
-var controller = NodeUtil.Controller<Pawn, PawnData>(_pawns)
+var sync = NodeUtil.Sync<MyNode, MyNodeData>(_nodes)
 	.WithDataId(data => data.Id)
 	.WithNodeId(node => node.ID)
-	.WithSpawner(data => spawnPawn(data))
-	.WithNodeUpdater((node, dat) => node.UpdatePawn(dat));
+	.WithSpawner(data => spawnNode(data))
+	.WithNodeUpdater((node, dat) => node.UpdateFunc(dat));
 
-// Update controller according to Collection of Data
+// Update synchronizer according to Collection of Data
 // May create/update/delete Nodes according to collection data
-controller.UpdateAll(dataCollection);
+sync.UpdateAll(dataCollection);
 
 // Update only existing ones (Will not delete / create new ones)
-controller.UpdateExisting(dataCollection);
+sync.UpdateExisting(dataCollection);
 ```

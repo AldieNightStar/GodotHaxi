@@ -161,9 +161,9 @@ public class NodeUtil
         return control;
     }
 
-    public static NodeController<NODE, DAT> Controller<NODE, DAT>(Node root)
+    public static NodeSync<NODE, DAT> Sync<NODE, DAT>(Node root)
         where NODE : Node
     {
-        return new NodeController<NODE, DAT>(root);
+        return new NodeSync<NODE, DAT>(root);
     }
 }
