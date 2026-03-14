@@ -36,9 +36,9 @@ public class RPC
         }
     }
 
-    public void Call(string name, List<string> arg)
+    public void Call(string name, IEnumerable<string> args)
     {
-        _writer.Call(name, arg);
+        _writer.Call(name, args);
     }
 
     public string GetCallString()
@@ -86,7 +86,7 @@ public class RPCCharWriter
         _divider = divider;
     }
 
-    public void Call(string name, List<string> args)
+    public void Call(string name, IEnumerable<string> args)
     {
         if (name.Contains(' '))
         {
