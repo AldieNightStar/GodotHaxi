@@ -159,9 +159,9 @@ public class NodeUtil
         return control;
     }
 
-    public static NodeSync<NODE, DAT> Sync<NODE, DAT>(Node root)
+    public static NodeSync<ID, NODE, DAT> Sync<ID, NODE, DAT>(Node root)
         where NODE : Node
     {
-        return new NodeSync<NODE, DAT>(root);
+        return new NodeSync<ID, NODE, DAT>(root);
     }
 }

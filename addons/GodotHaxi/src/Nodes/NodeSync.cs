@@ -5,12 +5,12 @@ using Godot;
 
 namespace GodotHaxi;
 
-public class NodeSync<NODE, DAT> where NODE : Node
+public class NodeSync<ID, NODE, DAT> where NODE : Node
 {
     private Node _root;
     private Func<DAT, NODE> _nodeSpawner;
-    private Func<NODE, uint> _nodeIdGetter;
-    private Func<DAT, uint> _dataIdGetter;
+    private Func<NODE, ID> _nodeIdGetter;
+    private Func<DAT, ID> _dataIdGetter;
     private Action<NODE, DAT> _nodeUpdater;
     private Action<NODE> _nodeDespawner;
 
@@ -19,13 +19,13 @@ public class NodeSync<NODE, DAT> where NODE : Node
         _root = rootNode;
     }
 
-    public NodeSync<NODE, DAT> WithSpawner(Func<DAT, NODE> spawner)
+    public NodeSync<ID, NODE, DAT> WithSpawner(Func<DAT, NODE> spawner)
     {
         _nodeSpawner = spawner;
         return this;
     }
     
-    public NodeSync<NODE, DAT> WithSpawner(string templateName, Action <NODE, DAT> spawner)
+    public NodeSync<ID, NODE, DAT> WithSpawner(string templateName, Action <NODE, DAT> spawner)
     {
         _nodeSpawner = (dat) =>
         {
@@ -36,25 +36,25 @@ public class NodeSync<NODE, DAT> where NODE : Node
         return this;
     }
 
-    public NodeSync<NODE, DAT> WithNodeId(Func<NODE, uint> getter)
+    public NodeSync<ID, NODE, DAT> WithNodeId(Func<NODE, ID> getter)
     {
         _nodeIdGetter = getter;
         return this;
     }
 
-    public NodeSync<NODE, DAT> WithDataId(Func<DAT, uint> idGetter)
+    public NodeSync<ID, NODE, DAT> WithDataId(Func<DAT, ID> idGetter)
     {
         _dataIdGetter = idGetter;
         return this;
     }
 
-    public NodeSync<NODE, DAT> WithNodeUpdater(Action<NODE, DAT> updater)
+    public NodeSync<ID, NODE, DAT> WithNodeUpdater(Action<NODE, DAT> updater)
     {
         _nodeUpdater = updater;
         return this;
     }
 
-    public NodeSync<NODE, DAT> WithDespawner(Action<NODE> despawner)
+    public NodeSync<ID, NODE, DAT> WithDespawner(Action<NODE> despawner)
     {
         _nodeDespawner = despawner;
         return this;
@@ -71,14 +71,14 @@ public class NodeSync<NODE, DAT> where NODE : Node
         }
     }
 
-    public void DespawnExisting(IEnumerable<uint> ids, bool fast = true)
+    public void DespawnExisting(IEnumerable<ID> ids, bool fast = true)
     {
         if (!_isRequiredSatisfied()) return;
 
         // Assoc nodes by their ids
         var nodeDict = CollectionUtil.Assoc(NodeUtil.GetOfType<NODE>(_root), node => _nodeIdGetter(node));
 
-        foreach (uint id in ids)
+        foreach (ID id in ids)
         {
             if (nodeDict.ContainsKey(id))
             {
@@ -147,7 +147,7 @@ public class NodeSync<NODE, DAT> where NODE : Node
         return satisfied;
     }
 
-    private (Dictionary<uint, DAT>, Dictionary<uint, NODE>) _getDataAndNodeDicts(IEnumerable<DAT> collection)
+    private (Dictionary<ID, DAT>, Dictionary<ID, NODE>) _getDataAndNodeDicts(IEnumerable<DAT> collection)
     {
         var dataDict = CollectionUtil.Assoc(collection, dat => _dataIdGetter(dat));
         var nodeDict = CollectionUtil.Assoc(_root.GetChildren().OfType<NODE>(), node => _nodeIdGetter(node));
