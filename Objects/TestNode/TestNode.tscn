@@ -1,0 +1,9 @@
+[gd_scene format=3 uid="uid://bv87bx7xktepk"]
+
+[ext_resource type="Texture2D" uid="uid://knfdfarrmu2f" path="res://Logo.png" id="1_kcnbt"]
+[ext_resource type="Script" uid="uid://bpfquw83meyk" path="res://Objects/TestNode/TestNode.cs" id="2_manax"]
+
+[node name="TestNode" type="Sprite2D" unique_id=2080707065]
+scale = Vector2(0.25, 0.25)
+texture = ExtResource("1_kcnbt")
+script = ExtResource("2_manax")

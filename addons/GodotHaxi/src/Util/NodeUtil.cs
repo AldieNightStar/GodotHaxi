@@ -127,9 +127,7 @@ public class NodeUtil
 
     public static IEnumerable<T> GetOfType<T>(Node node) where T : Node
     {
-        return node.GetChildren()
-            .Where(c => c is T)
-            .Select(c => c as T);
+        return node.GetChildren().OfType<T>();
     }
 
     public static int ForEachType<T>(Node node, Action<T> act) where T : Node

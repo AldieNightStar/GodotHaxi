@@ -89,7 +89,7 @@ var control = NodeUtil.WrapInControl(node, width, height);
 ```
 
 
-## Controller
+## Node Synchronizer
 * Accepts Node value, and Data value that node listens to.
 * Allows to control nodes and update them according to their data
 * Good for table top games, etc
@@ -99,6 +99,7 @@ var sync = NodeUtil.Sync<MyNode, MyNodeData>(_nodes)
 	.WithDataId(data => data.Id)
 	.WithNodeId(node => node.ID)
 	.WithSpawner(data => spawnNode(data))
+    .WithDespawner(node => node.QueueFree())
 	.WithNodeUpdater((node, dat) => node.UpdateFunc(dat));
 
 // Update synchronizer according to Collection of Data

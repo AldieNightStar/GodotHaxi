@@ -8,10 +8,11 @@ namespace GodotHaxi;
 public class NodeSync<NODE, DAT> where NODE : Node
 {
     private Node _root;
-    private Func<DAT, NODE> _spawner;
+    private Func<DAT, NODE> _nodeSpawner;
     private Func<NODE, uint> _nodeIdGetter;
     private Func<DAT, uint> _dataIdGetter;
     private Action<NODE, DAT> _nodeUpdater;
+    private Action<NODE> _nodeDespawner;
 
     public NodeSync(Node rootNode)
     {
@@ -20,19 +21,24 @@ public class NodeSync<NODE, DAT> where NODE : Node
 
     public NodeSync<NODE, DAT> WithSpawner(Func<DAT, NODE> spawner)
     {
-        _spawner = spawner;
+        _nodeSpawner = spawner;
+        return this;
+    }
+    
+    public NodeSync<NODE, DAT> WithSpawner(string templateName, Action <NODE, DAT> spawner)
+    {
+        _nodeSpawner = (dat) =>
+        {
+            var node = NodeUtil.Spawn<NODE>(_root, templateName);
+            spawner(node, dat);
+            return node;
+        };
         return this;
     }
 
-    public NodeSync<NODE, DAT> WithSpawner(string name)
+    public NodeSync<NODE, DAT> WithNodeId(Func<NODE, uint> getter)
     {
-        _spawner = (_) => NodeUtil.Spawn<NODE>(_root, name);
-        return this;
-    }
-
-    public NodeSync<NODE, DAT> WithNodeId(Func<NODE, uint> idGetter)
-    {
-        _nodeIdGetter = idGetter;
+        _nodeIdGetter = getter;
         return this;
     }
 
@@ -48,35 +54,37 @@ public class NodeSync<NODE, DAT> where NODE : Node
         return this;
     }
 
+    public NodeSync<NODE, DAT> WithDespawner(Action<NODE> despawner)
+    {
+        _nodeDespawner = despawner;
+        return this;
+    }
+
     public void UpdateExisting(IEnumerable<DAT> collection)
     {
         if (!_isRequiredSatisfied()) return;
-        var dict = CollectionUtil.Assoc(collection, dat => _dataIdGetter(dat));
+        var dataDict = CollectionUtil.Assoc(collection, dat => _dataIdGetter(dat));
+        var nodeDict = CollectionUtil.Assoc(_root.GetChildren().OfType<NODE>(), node => _nodeIdGetter(node));
 
-        foreach (var child in _root.GetChildren())
+        foreach (var (id, node) in nodeDict)
         {
-            if (child is NODE node)
-            {
-                var id = _nodeIdGetter(node);
-                var data = dict.GetValueOrDefault(id);
-                if (data != null) _nodeUpdater(node, data);
-            }
+            if (dataDict.ContainsKey(id)) _nodeUpdater(node, dataDict[id]);
         }
     }
 
-    public void DeleteExisting(IEnumerable<uint> ids)
+    public void DespawnExisting(IEnumerable<uint> ids, bool fast = true)
     {
         if (!_isRequiredSatisfied()) return;
 
         // Assoc nodes by their ids
-        var subNodes = NodeUtil.GetOfType<NODE>(_root);
-        var nodeDict = CollectionUtil.Assoc(subNodes, node => _nodeIdGetter(node));
+        var nodeDict = CollectionUtil.Assoc(NodeUtil.GetOfType<NODE>(_root), node => _nodeIdGetter(node));
 
         foreach (uint id in ids)
         {
-            var node = nodeDict.GetValueOrDefault(id);
-            if (node == null) continue;
-            node.QueueFree();
+            if (nodeDict.ContainsKey(id))
+            {
+                if (fast) nodeDict[id].QueueFree(); else _nodeDespawner(nodeDict[id]);
+            }
         }
     }
 
@@ -84,33 +92,26 @@ public class NodeSync<NODE, DAT> where NODE : Node
     {
         if (!_isRequiredSatisfied()) return;
         var dataDict = CollectionUtil.Assoc(collection, dat => _dataIdGetter(dat));
+        var nodeDict = CollectionUtil.Assoc(_root.GetChildren().OfType<NODE>(), node => _nodeIdGetter(node));
 
-        foreach (var child in _root.GetChildren())
+        // Get what to spawn
+        foreach (var (id, node) in nodeDict)
         {
-            if (child is NODE node)
+            if (dataDict.ContainsKey(id))
             {
-                var id = _nodeIdGetter(node);
-                var data = dataDict.GetValueOrDefault(id);
-                if (data != null)
-                {
-                    // Has data
-                    _nodeUpdater(node, data);
-
-                    // Remove from dict for the remaining to respawn
-                    dataDict.Remove(id);
-                }
-                else
-                {
-                    // Has no data
-                    node.QueueFree();
-                }
+                _nodeUpdater(node, dataDict[id]);
+                dataDict.Remove(id);
+            }
+            else
+            { // Has no data
+                _nodeDespawner(node);
             }
         }
-
-        // Spawn remaining
-        foreach (var data in dataDict.Values)
+        
+        // Spawn remaining ids
+        foreach (var (id, data) in dataDict)
         {
-            var node = _spawner(data);
+            var node = _nodeSpawner(data);
             if (node.GetParent() == null) _root.AddChild(node);
             _callWhenReady(node, () => _nodeUpdater(node, data));
         }
@@ -135,9 +136,14 @@ public class NodeSync<NODE, DAT> where NODE : Node
             GD.PushError("Node updater should not be NULL");
             satisfied = false;
         }
-        if (_spawner == null)
+        if (_nodeSpawner == null)
         {
             GD.PushError("Node spawner should not be NULL");
+            satisfied = false;
+        }
+        if (_nodeDespawner == null)
+        {
+            GD.PushError("Node Despawner should not be NULL");
             satisfied = false;
         }
         return satisfied;
