@@ -35,3 +35,22 @@ r.GetCallString();
 ```
 a This is a good way to call RPC|b Yep|getPid|respond 14284 OK
 ```
+
+## How to use with `WClient`?
+```cs
+// Create RPC instance
+var rpc = new RPC().WithCommand("a", (args) => ...);
+
+// Make new Client
+var client = new WClient("wss://echo.websocket.org")
+    .OnMessageText(rpc.Execute); // Here you telling to use RPC
+
+// Connect
+client.Connect();
+
+// Call something
+rpc.Call("a", ["1", "2", "3"]);
+
+// Then send
+rpc.Send(client);
+```

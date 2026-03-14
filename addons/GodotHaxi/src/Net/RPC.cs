@@ -50,11 +50,7 @@ public class RPC
 
     public bool Send(WClient client)
     {
-        if (!client.IsClosed)
-        {
-            client.SendString(GetCallString());
-            return true;
-        }
+        client.SendString(GetCallString());
         return false;
     }
 
@@ -79,17 +75,17 @@ public class RPC
         return (src, []);
     }
 
-    private bool _emitCommand(string name, List<string> arg)
+    private bool _emitCommand(string name, List<string> args)
     {
         if (_commands.ContainsKey(name))
         {
             var command = _commands[name];
-            command(arg);
+            command(args);
             return true;
         }
         else
         {
-            GD.PushError($"Can't emit command '{name}' because it's not set");
+            GD.PushError($"Can't emit command, because it's not set. Command: {name} [{string.Join(',', args)}]");
             return false;
         }
     }
