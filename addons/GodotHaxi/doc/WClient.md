@@ -24,6 +24,9 @@ client.SendString("Hello!");
 // Check if closed
 client.IsClosed;
 
+// Check if connected
+client.IsConnected;
+
 // Process each move
 // Need to be in _Process() method
 client.Process();

@@ -48,6 +48,7 @@ public class WClient
     }
 
     public bool IsClosed => _wasClosed || _isClosed(_state());
+    public bool IsConnected => !_wasClosed && _isConnected(_state());
 
     public bool Connect()
     {

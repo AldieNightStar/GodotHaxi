@@ -48,6 +48,26 @@ public class RPC
         return src;
     }
 
+    public bool Send(WClient client)
+    {
+        if (!client.IsClosed)
+        {
+            client.SendString(GetCallString());
+            return true;
+        }
+        return false;
+    }
+
+    public bool Send(WebSocketPeer socket)
+    {
+        if (socket.GetReadyState() == WebSocketPeer.State.Open)
+        {
+            socket.SendText(GetCallString());
+            return true;
+        }
+        return false;
+    }
+
     private (string, List<string>) _parseCommand(string src)
     {
         if (src.Contains(' '))

@@ -11,8 +11,8 @@
 // Create new RPC Instance
 // And provide few commands. Command is (List<string>) => {}
 var rpc = new RPC()
-    .WithCommand("a", arg => GD.Print("A: " + arg[0]))
-    .WithCommand("b", arg => GD.Print("B: " + arg[0]));
+    .WithCommand("a", args => GD.Print("A: " + args[0]))
+    .WithCommand("b", args => GD.Print("B: " + args[0]));
 
 // Prepare calls for the functions
 r.Call("a", ["This is a good way to call RPC"]);
@@ -20,11 +20,15 @@ r.Call("b", ["Yep"]);
 r.Call("getPid", []);
 r.Call("respond", ["14284 OK"])
 
-// Get call-string to send via your client implementation
-r.GetCallString();
+// Send to WClient or Websocket
+// returns true when ok
+r.Send(client);
 
 // Execute call-string to run on your server-client
 r.Execute(src);
+
+// Get call-string to send via your client implementation
+r.GetCallString();
 ```
 
 ## How `call-string` looks?
