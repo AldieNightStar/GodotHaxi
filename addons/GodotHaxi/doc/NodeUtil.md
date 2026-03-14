@@ -94,8 +94,9 @@ var control = NodeUtil.WrapInControl(node, width, height);
 * Allows to control nodes and update them according to their data
 * Good for table top games, etc
 ```cs
-// Create
-var sync = NodeUtil.Sync<MyNode, MyNodeData>(_nodes)
+// Create new Sync
+// Generics are: <ID, NODE, DAT>
+var sync = NodeUtil.Sync<int, MyNode, MyNodeData>(_nodes)
 	.WithDataId(data => data.Id)
 	.WithNodeId(node => node.ID)
 	.WithSpawner(data => spawnNode(data))

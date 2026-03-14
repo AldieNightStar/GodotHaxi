@@ -2,29 +2,30 @@ using System.Collections.Generic;
 using Game;
 using Godot;
 using GodotHaxi;
+using GodotHaxi.Net;
 
 public partial class Basic : Node2D
 {
+    private WClient _client;
+
     public override void _Ready()
     {
-        var s = NodeUtil.Sync<uint, TestNode, uint>(this)
-            .WithDataId(i => i)
-            .WithNodeId(n => n.Id)
-            .WithSpawner("TestNode", (node, i) => node.Id = i)
-            .WithDespawner(n => n.DeleteNode())
-            .WithNodeUpdater((n, i) => n.UpdateTestNode(i, i));
+        _client = new WClient("wss://echo-websocket.fly.dev");
+        if (!_client.Connect()) GD.PushError("Can't connect");
 
-        var t = CreateTween();
+        _client.OnMessageText(message => GD.Print("Message: " + message));
+        _client.OnDisconnect((status, reason) => GD.Print($"Disconnect: {status} {reason}"));
 
-        _then(t, s, [1, 2, 3]);
-        _then(t, s, []);
-        _then(t, s, [5, 0]);
-        _then(t, s, []);
+        // Testing
+        for (int i = 0; i < 32; i++) {
+            _client.SendString("Hello from WClient: " + i);
+            _client.SendBin([49, 50, 51]);
+        }
     }
 
-    private void _then(Tween t, NodeSync<uint, TestNode, uint> s, IEnumerable<uint> c)
+    public override void _Process(double delta)
     {
-        t.TweenInterval(1);
-        t.TweenCallback(Callable.From(() => s.UpdateAll(c)));
+        _client.Process();
     }
+
 }
