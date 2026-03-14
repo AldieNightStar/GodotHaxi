@@ -19,7 +19,6 @@ public partial class Basic : Node2D
         // Testing
         for (int i = 0; i < 32; i++) {
             _client.SendString("Hello from WClient: " + i);
-            _client.SendBin([49, 50, 51]);
         }
     }
 

@@ -51,14 +51,14 @@ public class WClient
 
     public bool Connect()
     {
-        if (_wasClosed) return false;
-
         var err = _socket.ConnectToUrl(_url);
         if (err != Error.Ok)
         {
             GD.PushError($"Can't connect from WClient: {_url}");
+            _wasClosed = true;
             return false;
         }
+        _wasClosed = false;
         return true;
     }
 
