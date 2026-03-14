@@ -63,8 +63,7 @@ public class NodeSync<NODE, DAT> where NODE : Node
     public void UpdateExisting(IEnumerable<DAT> collection)
     {
         if (!_isRequiredSatisfied()) return;
-        var dataDict = CollectionUtil.Assoc(collection, dat => _dataIdGetter(dat));
-        var nodeDict = CollectionUtil.Assoc(_root.GetChildren().OfType<NODE>(), node => _nodeIdGetter(node));
+        var (dataDict, nodeDict) = _getDataAndNodeDicts(collection);
 
         foreach (var (id, node) in nodeDict)
         {
@@ -91,8 +90,7 @@ public class NodeSync<NODE, DAT> where NODE : Node
     public void UpdateAll(IEnumerable<DAT> collection)
     {
         if (!_isRequiredSatisfied()) return;
-        var dataDict = CollectionUtil.Assoc(collection, dat => _dataIdGetter(dat));
-        var nodeDict = CollectionUtil.Assoc(_root.GetChildren().OfType<NODE>(), node => _nodeIdGetter(node));
+        var (dataDict, nodeDict) = _getDataAndNodeDicts(collection);
 
         // Get what to spawn
         foreach (var (id, node) in nodeDict)
@@ -147,5 +145,12 @@ public class NodeSync<NODE, DAT> where NODE : Node
             satisfied = false;
         }
         return satisfied;
+    }
+
+    private (Dictionary<uint, DAT>, Dictionary<uint, NODE>) _getDataAndNodeDicts(IEnumerable<DAT> collection)
+    {
+        var dataDict = CollectionUtil.Assoc(collection, dat => _dataIdGetter(dat));
+        var nodeDict = CollectionUtil.Assoc(_root.GetChildren().OfType<NODE>(), node => _nodeIdGetter(node));
+        return (dataDict, nodeDict);
     }
 }
