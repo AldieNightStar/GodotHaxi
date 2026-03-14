@@ -4,20 +4,21 @@
 * Allows to write and call RPC call-string
 * RPC call-string is a `|` separated string with commands
 * Symbols `|` can be escaped by `\\` if needed
+* Don't worry about using `|`. The `Call()` function will escape it automatically
 
 ## Usage
 ```cs
 // Create new RPC Instance
-// And provide few commands. Command is (string) => {}
+// And provide few commands. Command is (List<string>) => {}
 var rpc = new RPC()
-    .WithCommand("a", arg => GD.Print("A: " + s))
-    .WithCommand("b", arg => GD.Print("B: " + s));
+    .WithCommand("a", arg => GD.Print("A: " + arg[0]))
+    .WithCommand("b", arg => GD.Print("B: " + arg[0]));
 
 // Prepare calls for the functions
-r.Call("a", "This is a good way to call RPC");
-r.Call("b", "Yep");
-r.Call("getPid", "");
-r.Call("respond", "14284 OK")
+r.Call("a", ["This is a good way to call RPC"]);
+r.Call("b", ["Yep"]);
+r.Call("getPid", []);
+r.Call("respond", ["14284 OK"])
 
 // Get call-string to send via your client implementation
 r.GetCallString();
@@ -28,5 +29,5 @@ r.Execute(src);
 
 ## How `call-string` looks?
 ```
-a This is a good way to call RPC|b Yep|getPid |respond 14284 OK
+a This is a good way to call RPC|b Yep|getPid|respond 14284 OK
 ```

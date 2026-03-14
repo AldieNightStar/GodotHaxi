@@ -1,25 +1,25 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Godot;
 
 namespace GodotHaxi.Net;
 
 public class RPC
 {
-    private RPCCharReader _reader;
+    private const char DIVIDER = '|';
+
     private RPCCharWriter _writer;
 
-    private Dictionary<string, Action<string>> _commands;
+    private Dictionary<string, Action<List<string>>> _commands;
 
     public RPC()
     {
         _commands = new();
-        _writer = new RPCCharWriter();
+        _writer = new RPCCharWriter(DIVIDER);
     }
 
-    public RPC WithCommand(string name, Action<string> act)
+    public RPC WithCommand(string name, Action<List<string>> act)
     {
         _commands[name] = act;
         return this;
@@ -27,18 +27,16 @@ public class RPC
 
     public void Execute(string src)
     {
-        if (_reader == null) _reader = new RPCCharReader(src);
-        while (!_reader.IsEnd())
+        var divided = StringUtil.ParseDivided(DIVIDER, src);
+        foreach (var chunk in divided)
         {
-            var chunk = _reader.ReadUntilDivider();
-            if (chunk.Length > 0) {
-                var (command, arg) = _parseCommand(chunk);
-                if (command.Length > 0) _emitCommand(command, arg);
-            }
+            if (chunk.Length < 1) continue;
+            var (command, args) = _parseCommand(chunk);
+            if (command.Length > 0) _emitCommand(command, args);
         }
     }
 
-    public void Call(string name, string arg)
+    public void Call(string name, List<string> arg)
     {
         _writer.Call(name, arg);
     }
@@ -50,113 +48,74 @@ public class RPC
         return src;
     }
 
-    private (string, string) _parseCommand(string src)
+    private (string, List<string>) _parseCommand(string src)
     {
         if (src.Contains(' '))
         {
             var arr = src.Split(' ', count: 2);
-            return (arr[0], arr[1]);
+            var args = StringUtil.ParseDivided(DIVIDER, arr[1]);
+            return (arr[0], args);
         }
-        return (src, "");
+        return (src, []);
     }
 
-    private void _emitCommand(string name, string arg)
+    private bool _emitCommand(string name, List<string> arg)
     {
         if (_commands.ContainsKey(name))
         {
             var command = _commands[name];
             command(arg);
+            return true;
         }
         else
         {
             GD.PushError($"Can't emit command '{name}' because it's not set");
+            return false;
         }
     }
 }
 
 public class RPCCharWriter
 {
-    public static char DIVIDER = RPCCharReader.DIVIDER;
-
     private List<string> _list;
+    private char _divider;
 
-    public RPCCharWriter()
+    public RPCCharWriter(char divider)
     {
         _list = new();
+        _divider = divider;
     }
 
-    public void Call(string name, string arg)
+    public void Call(string name, List<string> args)
     {
-        arg = arg.Replace("\\", "\\\\").Replace($"{DIVIDER}", $"\\{DIVIDER}");
-        _list.Add($"{name} {arg}");
+        if (name.Contains(' '))
+        {
+            GD.PushError("Can't call name with space");
+            return;
+        }
+
+        var sanitizedArgs = args.Select(_sanitize);
+        var sanitizedName = _sanitize(name);
+        var fullArgs = _sanitize(string.Join(_divider, sanitizedArgs));
+
+        if (fullArgs.Length > 0)
+            _list.Add($"{sanitizedName} {fullArgs}");
+        else
+            _list.Add(sanitizedName);
     }
 
     public string AsString()
     {
-        return string.Join('|', _list);
+        return string.Join(_divider, _list);
     }
 
     public void Reset()
     {
         _list.Clear();
     }
-}
 
-public class RPCCharReader
-{
-    public static char DIVIDER = '|';
-
-    private string _src;
-    private int _pos;
-
-    public RPCCharReader(string src)
+    private string _sanitize(string src)
     {
-        _src = src;
-        _pos = 0;
-    }
-
-    public void Reset(string src)
-    {
-        _src = src;
-        _pos = 0;
-    }
-
-    public bool IsEnd()
-    {
-        return _pos >= _src.Length;
-    }
-
-    public char ReadChar()
-    {
-        if (IsEnd()) return '\0';
-        return _src[_pos++];
-    }
-
-    public string ReadUntilDivider()
-    {
-        StringBuilder sb = new StringBuilder();
-        bool escaped = false;
-
-        while (!IsEnd())
-        {
-            var ch = ReadChar();
-
-            if (escaped)
-            {
-                sb.Append(ch);
-                escaped = false;
-                continue;
-            }
-
-            if (ch == '\\')
-            {
-                escaped = true;
-                continue;
-            }
-
-            if (ch == DIVIDER) break;
-            sb.Append(ch);
-        }
-        return sb.ToString();
+        return StringUtil.Escape(src).Replace($"{_divider}", $"\\{_divider}");
     }
 }
