@@ -15,20 +15,20 @@ var rpc = new RPC()
     .WithCommand("b", args => GD.Print("B: " + args[0]));
 
 // Prepare calls for the functions
-r.Call("a", ["This is a good way to call RPC"]);
-r.Call("b", ["Yep"]);
-r.Call("getPid", []);
-r.Call("respond", ["14284 OK"])
+rpc.Call("a", ["This is a good way to call RPC"]);
+rpc.Call("b", ["Yep"]);
+rpc.Call("getPid", []);
+rpc.Call("respond", ["14284 OK"])
 
 // Send to WClient or Websocket
 // returns true when ok
-r.Send(client);
+rpc.Send(client);
 
-// Execute call-string to run on your server-client
-r.Execute(src);
+// Execute call-string on current machine
+rpc.Execute(src);
 
-// Get call-string to send via your client implementation
-r.GetCallString();
+// Get call-string to Execute(...) later
+rpc.GetCallString();
 ```
 
 ## How `call-string` looks?
@@ -51,6 +51,6 @@ client.Connect();
 // Call something
 rpc.Call("a", ["1", "2", "3"]);
 
-// Then send
+// Then send to the client
 rpc.Send(client);
 ```
