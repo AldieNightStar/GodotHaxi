@@ -1,28 +1,38 @@
+using System;
 using Godot;
-using GodotHaxi.Net;
+using GodotHaxi;
 
 public partial class Basic : Node2D
 {
-    private WClient _client;
 
     public override void _Ready()
     {
-        var r = new RPC()
-            .WithCommand("a", (args) => GD.Print(string.Join(',', args)));
+        var plot = new Plot().Build(b =>
+        {
+            b.Label("Start");
+            b.Act(_prints("Hello!"));
+            b.Act(_prints("Hi!"));
+            b.Act(_prints("HoeBin!"));
+            b.Act(_waits(1));
+            b.Act(_prints("Fin!"));
+            b.Act(_waits(1));
+            b.Jump("Start");
+        });
 
-        r.Call("a", ["1", "2", "3"]);
-
-        _client = new WClient("wss://echo.websocket.org")
-            .OnMessageText(r.Execute);
-        _client.Connect();
-
-        r.Send(_client);
+        plot.Step();
     }
 
-    public override void _Process(double delta)
+    private Action<Plot> _prints(string text) => p =>
     {
-        _client.Process();
-    }
+        GD.Print(text);
+        p.Next();
+    };
 
+    private Action<Plot> _waits(double seconds) => p =>
+    {
+        var t = CreateTween();
+        t.TweenInterval(seconds);
+        t.TweenCallback(Callable.From(p.Next));
+    };
 
 }
