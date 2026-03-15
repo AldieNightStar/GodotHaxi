@@ -65,9 +65,11 @@ public class WClient
 
     public void Process()
     {
+        // Poll even if state is closing.
+        _socket.Poll();
+
         if (_wasClosed) return;
 
-        _socket.Poll();
         var state = _state();
 
         if (_isConnected(state))
