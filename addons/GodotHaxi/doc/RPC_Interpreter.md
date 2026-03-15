@@ -3,22 +3,24 @@
 ## Notes
 * Allows to write and call RPC call-string
 * RPC call-string is a `|` separated string with commands
-* Symbols `|` can be escaped by `\\` if needed
-* Don't worry about using `|`. The `Call()` function will escape it automatically
 
 ## Usage
 ```cs
 // Create new RPC Instance
 // And provide few commands. Command is (List<string>) => {}
 var rpc = new RPC()
-    .WithCommand("a", args => GD.Print("A: " + args[0]))
-    .WithCommand("b", args => GD.Print("B: " + args[0]));
+    .WithCommand("print", a => GD.Print("Text: " + a["text"]))
+    .WithCommand("other", a => GD.Print("Respond: " + a["id"]));
 
 // Prepare calls for the functions
-rpc.Call("a", ["This is a good way to call RPC"]);
-rpc.Call("b", ["Yep"]);
-rpc.Call("getPid", []);
-rpc.Call("respond", ["14284 OK"])
+rpc.Call("print", new() {
+    { "text", "Hello World" },
+    { "id",   "abc123"      },
+});
+rpc.Call("print", new() {
+    { "text", "Say Hello to me" },
+    { "id",   "def987"          },
+});
 
 // Send to WClient or Websocket
 // returns true when ok
@@ -28,12 +30,9 @@ rpc.Send(client);
 rpc.Execute(src);
 
 // Get call-string to Execute(...) later
+// Sample:
+//   print text:Hello World;id:abc123|print text:Say Hello to me;id:def987
 rpc.GetCallString();
-```
-
-## How `call-string` looks?
-```
-a This is a good way to call RPC|b Yep|getPid|respond 14284 OK
 ```
 
 ## How to use with `WClient`?
@@ -49,7 +48,7 @@ var client = new WClient("wss://echo.websocket.org")
 client.Connect();
 
 // Call something
-rpc.Call("a", ["1", "2", "3"]);
+rpc.Call("a", new() { {"text", "Hello"} });
 
 // Then send to the client
 rpc.Send(client);

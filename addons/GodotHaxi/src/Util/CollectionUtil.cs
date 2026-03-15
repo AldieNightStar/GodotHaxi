@@ -25,6 +25,16 @@ public class CollectionUtil
         return items.GroupBy(func).ToDictionary(g => g.Key, g => (IEnumerable<T>)g);
     }
 
+    public static Dictionary<K, V2> MapDictValues<K, V, V2>(Dictionary<K, V> dict, Func<V, V2> func)
+    {
+        var newDict = new Dictionary<K, V2>();
+        foreach (var (k, v) in dict)
+        {
+            newDict[k] = func(v);
+        }
+        return newDict;
+    }
+
     public static ISet<K> SetOf<T, K>(IEnumerable<T> items, Func<T, K> func)
     {
         HashSet<K> set = new();

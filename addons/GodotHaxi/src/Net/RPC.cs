@@ -11,7 +11,7 @@ public class RPC
 
     private RPCCharWriter _writer;
 
-    private Dictionary<string, Action<List<string>>> _commands;
+    private Dictionary<string, Action<Dictionary<string, string>>> _commands;
 
     public RPC()
     {
@@ -19,7 +19,7 @@ public class RPC
         _writer = new RPCCharWriter(DIVIDER);
     }
 
-    public RPC WithCommand(string name, Action<List<string>> act)
+    public RPC WithCommand(string name, Action<Dictionary<string, string>> act)
     {
         _commands[name] = act;
         return this;
@@ -36,7 +36,7 @@ public class RPC
         }
     }
 
-    public void Call(string name, IEnumerable<string> args)
+    public void Call(string name, Dictionary<string, string> args)
     {
         _writer.Call(name, args);
     }
@@ -64,18 +64,18 @@ public class RPC
         return false;
     }
 
-    private (string, List<string>) _parseCommand(string src)
+    private (string, Dictionary<string, string>) _parseCommand(string src)
     {
         if (src.Contains(' '))
         {
             var arr = src.Split(' ', count: 2);
-            var args = StringUtil.ParseDivided(DIVIDER, arr[1]);
+            var args = StringUtil.ParseColonArguments(arr[1]);
             return (arr[0], args);
         }
         return (src, []);
     }
 
-    private bool _emitCommand(string name, List<string> args)
+    private bool _emitCommand(string name, Dictionary<string, string> args)
     {
         if (_commands.ContainsKey(name))
         {
@@ -85,7 +85,7 @@ public class RPC
         }
         else
         {
-            GD.PushError($"Can't emit command, because it's not set. Command: {name} [{string.Join(',', args)}]");
+            GD.PushError($"Can't emit command '{name}', because it's not set");
             return false;
         }
     }
@@ -102,7 +102,7 @@ public class RPCCharWriter
         _divider = divider;
     }
 
-    public void Call(string name, IEnumerable<string> args)
+    public void Call(string name, Dictionary<string, string> args)
     {
         if (name.Contains(' '))
         {
@@ -110,9 +110,9 @@ public class RPCCharWriter
             return;
         }
 
-        var sanitizedArgs = args.Select(_sanitize);
+        // Sanitize arguments
         var sanitizedName = _sanitize(name);
-        var fullArgs = _sanitize(string.Join(_divider, sanitizedArgs));
+        var fullArgs = _sanitize(StringUtil.GetColonArguments(args));
 
         if (fullArgs.Length > 0)
             _list.Add($"{sanitizedName} {fullArgs}");
@@ -132,6 +132,7 @@ public class RPCCharWriter
 
     private string _sanitize(string src)
     {
-        return StringUtil.Escape(src).Replace($"{_divider}", $"\\{_divider}");
+        return StringUtil.Escape(src)
+            .Replace($"{_divider}", $"\\{_divider}");
     }
 }

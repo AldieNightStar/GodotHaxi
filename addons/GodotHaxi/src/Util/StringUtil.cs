@@ -71,6 +71,77 @@ public class StringUtil
         return list;
     }
 
+    public static Dictionary<string, string> ParseColonArguments(string src, char divider = ';')
+    {
+        string currentParam = "null";
+        var sb = new StringBuilder();
+        var dict = new Dictionary<string, string>();
+        var valueState = false;
+        var escaped = false;
+
+        foreach (char c in src)
+        {
+            if (valueState)
+            { // Value state
+                if (escaped)
+                {
+                    escaped = false;
+                    sb.Append(_getEscaped(c));
+                    continue;
+                }
+
+                if (c == '\\')
+                {
+                    escaped = true;
+                    continue;
+                }
+
+                if (c == divider)
+                {
+                    var value = sb.ToString();
+                    sb.Clear();
+                    dict[currentParam] = value;
+                    valueState = false;
+                    escaped = false;
+                }
+                else
+                {
+                    sb.Append(c);
+                }
+            }
+            else
+            { // Key state
+                if (c == ':')
+                {
+                    currentParam = sb.ToString();
+                    sb.Clear();
+                    valueState = true;
+                    escaped = false;
+                }
+                else
+                {
+                    sb.Append(c);
+                }
+            }
+        }
+
+        if (valueState && sb.Length > 0) dict[currentParam] = sb.ToString();
+
+        return dict;
+    }
+
+    public static string GetColonArguments(Dictionary<string, string> args)
+    {
+        var sb = new StringBuilder();
+        foreach (var (k, v) in args)
+        {
+            if (sb.Length>0) sb.Append(';');
+            var escapedV = Escape(v).Replace(";", "\\;");
+            sb.Append($"{k}:{escapedV}");
+        }
+        return sb.ToString();
+    }
+
     private static char _getEscaped(char c)
     {
         if (c == 'n') return '\n';
